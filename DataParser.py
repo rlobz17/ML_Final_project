@@ -5,15 +5,14 @@ PATH_TO_DATA_FOLDER = "./Data"
 DATA_SET_GROUP = ["Train", "Test"]
 #####################################
 
-from os import walk
 import glob
+import random
 
 
 class DataParser:
 
     def __init__(self):
         self.data_pathes = self.all_wav_files_path()
-        print self.data_pathes
 
     def all_wav_files_path(self, path_to_data_folder = PATH_TO_DATA_FOLDER):
         data_pathes = dict()
@@ -29,6 +28,16 @@ class DataParser:
 
         return data_pathes
 
+    def return_one_random_path_file(self, number_voice: int):
+        random_file_index = random.randint(0, len(self.data_pathes["Train"][number_voice])-1)
+        one_random_file_path = self.data_pathes["Train"][number_voice][random_file_index]
+        return one_random_file_path
+
+    def return_data_pathes(self):
+        return self.data_pathes
+
 
 if __name__ == "__main__":
     data_parser = DataParser()
+    print(data_parser.return_one_random_path_file(1))
+    print(data_parser.return_data_pathes())
