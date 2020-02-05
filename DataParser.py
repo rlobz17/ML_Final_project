@@ -29,7 +29,7 @@ class DataParser:
         return data_pathes
 
     def return_one_random_path_file(self, isTrain: bool, number_voice: int):
-        random_file_index = random.randint(0, self.length_of_files_in_folder(isTrain,number_voice))
+        random_file_index = random.randint(0, self.length_of_files_in_folder(isTrain,number_voice)-1)
         return self.data_pathes[DATA_SET_GROUP[0]][number_voice][random_file_index] if isTrain else self.data_pathes[DATA_SET_GROUP[1]][number_voice][random_file_index]
 
     def return_data_pathes(self):
