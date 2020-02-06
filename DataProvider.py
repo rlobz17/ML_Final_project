@@ -12,8 +12,9 @@ class DataProvider:
         self.dataParser = DataParser.DataParser()
         self.vad = VAD.VAD()
         self.dataPathDictionary = self.__createDicitonaryForDataPath__(isTrain)
-        while self.hasNext():
-            print(self.next().shape)
+        # while self.hasNext():
+        #     spectrogram, number_list = self.next()
+        #     print(number_list, ') ', spectrogram.shape)
 
 
     def hasNext(self):
@@ -30,8 +31,12 @@ class DataProvider:
             del self.dataPathDictionary[randomNumber]
         
         randomDataPath = self.dataParser.return_data_path_on_coordinates(self.isTrain, randomNumber, randomDataPathIndexInDataParser)
-        print(randomDataPath)
-        return self.__getDataFromPath__(randomDataPath)
+        #print(randomDataPath)
+        
+        result = np.zeros(5)
+        if self.isTrain:
+            result[randomNumber - 1] = 1
+        return self.__getDataFromPath__(randomDataPath), result
 
 
     
