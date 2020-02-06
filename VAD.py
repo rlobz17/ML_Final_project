@@ -7,7 +7,6 @@ class VAD:
     
     def remove_silences(self, numpy_data, aggressive = 1):
         max_amplitude = np.max(np.abs(numpy_data))
-        print(max_amplitude)
         current_frequency = numpy_data[0]
         freq_difference_allowed = AGGRESSIVE_DIFFERENCES_MULTIPLAYER * max_amplitude * aggressive
         numpy_data = self.remove_silence_on_side(numpy_data, SIDES[0], freq_difference_allowed)
