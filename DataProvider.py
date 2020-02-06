@@ -11,10 +11,11 @@ class DataProvider:
         self.isTrain = isTrain
         self.dataParser = DataParser.DataParser()
         self.vad = VAD.VAD()
-        self.dataPathDictionary = self.__createDicitonaryForDataPath__(isTrain)
+        self.dataPathDictionary = self.__createDicitonaryForDataPath__()
         # while self.hasNext():
         #     spectrogram, number_list = self.next()
         #     print(number_list, ') ', spectrogram.shape)
+        #print(self.dataParser.__return_data_pathes__())
 
 
     def hasNext(self):
@@ -31,23 +32,27 @@ class DataProvider:
             del self.dataPathDictionary[randomNumber]
         
         randomDataPath = self.dataParser.return_data_path_on_coordinates(self.isTrain, randomNumber, randomDataPathIndexInDataParser)
-        #print(randomDataPath)
         
         result = np.zeros(5)
         if self.isTrain:
             result[randomNumber - 1] = 1
+        else:
+            randomNumber = self.dataParser.parse_file_name_to_number(randomDataPath)
+            result[randomNumber - 1] = 1
         return self.__getDataFromPath__(randomDataPath), result
 
-
     
-    def __createDicitonaryForDataPath__(self, isTrain):
+    def __createDicitonaryForDataPath__(self):
         dataPathDictionary = dict()
-        for number in range(1,6,1):
-            dataCountOfNumber = self.dataParser.length_of_files_in_folder(isTrain,number)
-            dataPathDictionary[number] = list(range(dataCountOfNumber-1))
-        return dataPathDictionary
-
-
+        if self.isTrain:
+            for number in range(1,6,1):
+                dataCountOfNumber = self.dataParser.length_of_files_in_folder(self.isTrain, number)
+                dataPathDictionary[number] = list(range(dataCountOfNumber))
+            return dataPathDictionary
+        else:
+            dataCountOfNumber = self.dataParser.length_of_files_in_folder(self.isTrain, 0)
+            dataPathDictionary[0] = list(range(dataCountOfNumber))
+            return dataPathDictionary
 
 
     def __getDataFromPath__(self, dataPath):
@@ -69,4 +74,7 @@ class DataProvider:
 
 
 if __name__ == "__main__":
-    DataProvider()
+    dataProvider = DataProvider(False)
+    while dataProvider.hasNext():
+        spectrogram, result = dataProvider.next()
+        print(spectrogram.shape, result)
