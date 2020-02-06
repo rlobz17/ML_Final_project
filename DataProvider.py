@@ -38,7 +38,7 @@ class DataProvider:
             result[randomNumber - 1] = 1
         else:
             randomNumber = self.dataParser.parse_file_name_to_number(randomDataPath)
-            result[randomNumber - 1] = 1
+            result = randomNumber
         return self.__getDataFromPath__(randomDataPath), result
 
     
