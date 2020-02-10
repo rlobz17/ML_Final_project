@@ -26,6 +26,7 @@ class DataParser:
             files_in_the_path = glob.glob(files_path_with_format)
             set_group_data[i+1] = files_in_the_path
         data_pathes[data_set_group] = set_group_data
+        #print(set_group_data)
 
         #### TEST ####
         data_set_group = DATA_SET_GROUP[1]
