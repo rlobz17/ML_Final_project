@@ -37,8 +37,12 @@ class VAD:
             print("NOT VALID DATA")
             assert "NOT VALID DATA"
         if side == SIDES[0]:
+            if numpy_data[silence_ending_point:] is None:
+                return self.remove_silence_on_side(numpy_data, side, freq_difference_allowed - 0.001)
             return numpy_data[silence_ending_point:]
         else:
+            if numpy_data[:silence_ending_point] is None:
+                return self.remove_silence_on_side(numpy_data, side, freq_difference_allowed - 0.001)
             return numpy_data[:silence_ending_point]
         
 

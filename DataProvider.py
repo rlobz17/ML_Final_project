@@ -53,8 +53,9 @@ class DataProvider:
                     self.maxLength = len(spectrogram)
                     print("new value of ", self.maxLength)
                 else:
-                    spectrogram = spectrogram[:self.maxLength]
+                    spectrogram = spectrogram[:,:self.maxLength]
                     print("resized to ", self.maxLength)
+            #print(np.matrix(spectrogram).shape)
             dataSpectograms.append((spectrogram, y))
             sys.stdout.write("-")
             sys.stdout.flush()
@@ -64,11 +65,12 @@ class DataProvider:
         sys.stdout.write("[")
         sys.stdout.flush()
         for spectrogram,y in dataSpectograms:
-            if len(spectrogram) < self.maxLength:
-                #print(np.matrix(spectrogram).shape)
-                zeros = np.zeros((self.maxLength - len(spectrogram), len(spectrogram[0])))
+            #print(np.matrix(spectrogram).shape)
+            if spectrogram.shape[0] < self.maxLength:
+                #print(spectrogram.shape)
+                zeros = np.zeros((self.maxLength - spectrogram.shape[0], spectrogram.shape[1]))
                 #print(zeros.shape)
-                spectrogram = np.append(spectrogram,zeros, axis = 0)
+                spectrogram = np.append(spectrogram, zeros, axis = 0)
                 #print(np.matrix(spectrogram).shape)
 
             sameShapeSpectograms.append((np.ravel(spectrogram), y))
@@ -126,24 +128,18 @@ class DataProvider:
 
     def __getDataFromPath__(self, dataPath):
         data_numpy, sampling_rate = librosa.load(dataPath, sr=16000)
-        data_numpy_no_silence = self.vad.remove_silences(data_numpy, 0.02)
-        freqs, times, spectrogram = self.__log_specgram__(data_numpy_no_silence, sampling_rate)
+        data_numpy_no_silence = self.vad.remove_silences(data_numpy, 0.09)
+        spectrogram = self.__log_specgram__(data_numpy_no_silence, sampling_rate)
         mean = np.mean(spectrogram, axis=0)
         std = np.std(spectrogram, axis=0)
-        if np.count_nonzero(std) != len(std):
-            print(dataPath)
-            print(spectrogram)
         spectrogram = (spectrogram - mean) / std
-        if np.isnan(spectrogram[0][0]):
-            print(dataPath)
+        #print(spectrogram)
         return spectrogram
 
 
-    def __log_specgram__(self, audio, sample_rate, window_size=20, step_size=10, eps=1e-10):
-        nperseg = int(round(window_size * sample_rate / 1e3))
-        noverlap = int(round(step_size * sample_rate / 1e3))
-        freqs, times, spec = signal.spectrogram(audio, fs=sample_rate, window='hann', nperseg=nperseg, noverlap=noverlap, detrend=False)
-        return freqs, times, np.log(spec.T.astype(np.float32) + eps)
+    def __log_specgram__(self, audio, sample_rate):
+        mfccs = librosa.feature.mfcc(audio, sr=sample_rate)
+        return np.matrix(mfccs).T
 
 
 
