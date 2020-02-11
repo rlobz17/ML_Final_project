@@ -132,6 +132,7 @@ class DataProvider:
         spectrogram = self.__log_specgram__(data_numpy_no_silence, sampling_rate)
         mean = np.mean(spectrogram, axis=0)
         std = np.std(spectrogram, axis=0)
+        
         spectrogram = (spectrogram - mean) / std
         #print(spectrogram)
         return spectrogram
