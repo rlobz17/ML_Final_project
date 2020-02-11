@@ -128,7 +128,7 @@ class DataProvider:
 
     def __getDataFromPath__(self, dataPath):
         data_numpy, sampling_rate = librosa.load(dataPath, sr=16000)
-        data_numpy_no_silence = self.vad.remove_silences(data_numpy, 0.09)
+        data_numpy_no_silence = self.vad.remove_silences(data_numpy, 0.15)
         spectrogram = self.__log_specgram__(data_numpy_no_silence, sampling_rate)
         mean = np.mean(spectrogram, axis=0)
         std = np.std(spectrogram, axis=0)
