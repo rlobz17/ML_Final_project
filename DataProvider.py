@@ -7,7 +7,7 @@ from scipy import signal
 import sys
 
 
-MULTIPLY_FOR_EVERY_VOICE = 10
+MULTIPLY_FOR_EVERY_VOICE = 7
 
 class DataProvider:
 
@@ -159,7 +159,7 @@ class DataProvider:
 
     def __getDataFromPath__(self, dataPath):
         data_numpy, sampling_rate = librosa.load(dataPath, sr=16000)
-        data_numpy_no_silence = self.vad.remove_silences(data_numpy, 0.15)
+        data_numpy_no_silence = self.vad.remove_silences(data_numpy, 0.01)
         datas = self.__add_background_voice__(data_numpy_no_silence)
         result = list()
         for data in datas:
@@ -179,15 +179,15 @@ class DataProvider:
         return np.matrix(mfccs).T
 
     def __add_background_voice__(self, numpy_data):
-        background_voice_index = random.randint(0,len(self.background_voices)-1)
-        background_voice = self.background_voices[background_voice_index]
         result = list()
         if self.isTrain:
             for i in range(MULTIPLY_FOR_EVERY_VOICE):
+                background_voice_index = random.randint(0,len(self.background_voices)-1)
+                background_voice = self.background_voices[background_voice_index]
                 numpy_data_length = len(numpy_data)
                 start_index_in_background_voice = random.randint(0, len(background_voice)-1-numpy_data_length)
                 background_voice_data_to_add = background_voice[start_index_in_background_voice:start_index_in_background_voice+numpy_data_length]
-                result.append(numpy_data*0.8 + background_voice_data_to_add*0.2)
+                result.append(numpy_data*0.9 + background_voice_data_to_add*0.1)
         else:
             result.append(numpy_data)
         return result
