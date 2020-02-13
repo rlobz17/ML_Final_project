@@ -7,6 +7,8 @@ from scipy import signal
 import sys
 
 
+MULTIPLY_FOR_EVERY_VOICE = 10
+
 class DataProvider:
 
     def __init__(self):
@@ -15,6 +17,7 @@ class DataProvider:
             self.dataParser = DataParser.DataParser()
             self.vad = VAD.VAD()
             self.dataPathDictionary = self.__createDicitonaryForDataPath__()
+            self.__create_random_noise_files__()
             self.__makeEverySpectogramSame__()
 
 
@@ -47,16 +50,17 @@ class DataProvider:
             self.maxLength = 0
         dataSpectograms = []
         while self.__hasNext__():
-            spectrogram, y = self.__next__()
-            if self.maxLength < len(spectrogram):
-                if self.isTrain:
-                    self.maxLength = len(spectrogram)
-                    print("new value of ", self.maxLength)
-                else:
-                    spectrogram = spectrogram[:,:self.maxLength]
-                    print("resized to ", self.maxLength)
-            #print(np.matrix(spectrogram).shape)
-            dataSpectograms.append((spectrogram, y))
+            spectrograms, y = self.__next__()
+            for spectrogram in spectrograms:
+                if self.maxLength < len(spectrogram):
+                    if self.isTrain:
+                        self.maxLength = len(spectrogram)
+                        print("new value of ", self.maxLength)
+                    else:
+                        spectrogram = spectrogram[:,:self.maxLength]
+                        print("resized to ", self.maxLength)
+                #print(np.matrix(spectrogram).shape)
+                dataSpectograms.append((spectrogram, y))
             sys.stdout.write("-")
             sys.stdout.flush()
         sys.stdout.write("]\n")
@@ -72,8 +76,13 @@ class DataProvider:
                 #print(zeros.shape)
                 spectrogram = np.append(spectrogram, zeros, axis = 0)
                 #print(np.matrix(spectrogram).shape)
-
-            sameShapeSpectograms.append((np.ravel(spectrogram), y))
+            
+            if self.isTrain:
+                resultVoices = self.__add_random_noise__(spectrogram)
+                for spectrogram_voice in resultVoices:
+                    sameShapeSpectograms.append((np.ravel(spectrogram_voice), y))
+            else:
+                sameShapeSpectograms.append((np.ravel(spectrogram), y))
             sys.stdout.write("#")
             sys.stdout.flush()
 
@@ -84,6 +93,28 @@ class DataProvider:
         else:
             self.testSpectograms = sameShapeSpectograms
 
+
+    def __create_random_noise_files__(self):
+        if self.isTrain:
+            background_voices = self.dataParser.helper_files_path()
+            self.background_voices = list()
+            for background_voice_path in background_voices:
+                print("reading helper data on path:", background_voice_path)
+                data_numpy, sampling_rate = librosa.load(background_voice_path, sr=16000)
+                self.background_voices.append(data_numpy)
+
+
+    def __add_random_noise__(self, voice):
+        result = list()
+        result.append(voice)
+        # for i in range(10):
+        #     randoNoise = random.random()
+        #     addition = np.full(voice.shape, randoNoise)
+        #     newVoice = voice + addition
+        #     result.append(newVoice)
+        #     newVoice = voice - addition
+        #     result.append(newVoice)
+        return result
 
     def __hasNext__(self):
         return True if len(self.dataPathDictionary.keys()) else False
@@ -129,18 +160,37 @@ class DataProvider:
     def __getDataFromPath__(self, dataPath):
         data_numpy, sampling_rate = librosa.load(dataPath, sr=16000)
         data_numpy_no_silence = self.vad.remove_silences(data_numpy, 0.15)
-        spectrogram = self.__log_specgram__(data_numpy_no_silence, sampling_rate)
-        mean = np.mean(spectrogram, axis=0)
-        std = np.std(spectrogram, axis=0)
-        
-        spectrogram = (spectrogram - mean) / std
-        #print(spectrogram)
-        return spectrogram
+        datas = self.__add_background_voice__(data_numpy_no_silence)
+        result = list()
+        for data in datas:
+            spectrogram = self.__log_specgram__(data, sampling_rate)
+            mean = np.mean(spectrogram, axis=0)
+            std = np.std(spectrogram, axis=0)
+            zeros = np.where(std == 0)[0]
+            for zero_index in zeros:
+                std[zero_index] = spectrogram[0][zero_index]
+            spectrogram = (spectrogram - mean) / std
+            result.append(spectrogram)
+        return result
 
 
     def __log_specgram__(self, audio, sample_rate):
         mfccs = librosa.feature.mfcc(audio, sr=sample_rate)
         return np.matrix(mfccs).T
+
+    def __add_background_voice__(self, numpy_data):
+        background_voice_index = random.randint(0,len(self.background_voices)-1)
+        background_voice = self.background_voices[background_voice_index]
+        result = list()
+        if self.isTrain:
+            for i in range(MULTIPLY_FOR_EVERY_VOICE):
+                numpy_data_length = len(numpy_data)
+                start_index_in_background_voice = random.randint(0, len(background_voice)-1-numpy_data_length)
+                background_voice_data_to_add = background_voice[start_index_in_background_voice:start_index_in_background_voice+numpy_data_length]
+                result.append(numpy_data*0.8 + background_voice_data_to_add*0.2)
+        else:
+            result.append(numpy_data)
+        return result
 
 
 

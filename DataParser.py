@@ -2,7 +2,7 @@
 ###### STATIC FINAL VARIABLES #######
 #####################################
 PATH_TO_DATA_FOLDER = "./Data"
-DATA_SET_GROUP = ["Train", "Test"]
+DATA_SET_GROUP = ["Train", "Test", "Helper"]
 #####################################
 
 import glob
@@ -36,8 +36,14 @@ class DataParser:
         set_group_data[0] = files_in_the_path
         data_pathes[data_set_group] = set_group_data
 
-        #print(set_group_data)
-
+        #### HELPER ####
+        data_set_group = DATA_SET_GROUP[2]
+        files_path_with_format = PATH_TO_DATA_FOLDER + "/" + data_set_group + "/*.wav"
+        files_in_the_path = glob.glob(files_path_with_format)
+        set_group_data = dict()
+        set_group_data[0] = files_in_the_path
+        data_pathes[data_set_group] = set_group_data
+ 
         return data_pathes
 
     def return_one_random_path_file(self, isTrain: bool, number_voice: int):
@@ -59,6 +65,11 @@ class DataParser:
         splitted_file_name = file_name.split("-")
         number_with_things = splitted_file_name[2]
         return int(number_with_things[0])
+
+    def helper_files_path(self):
+        return self.data_pathes[DATA_SET_GROUP[2]][0]
+
+
         
 
 if __name__ == "__main__":
