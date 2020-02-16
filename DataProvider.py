@@ -8,6 +8,7 @@ import sys
 
 
 MULTIPLY_FOR_EVERY_VOICE = 7
+N_MFCC = 25
 
 class DataProvider:
 
@@ -80,13 +81,13 @@ class DataProvider:
             if self.isTrain:
                 resultVoices = self.__add_random_noise__(spectrogram)
                 for spectrogram_voice in resultVoices:
-                    sameShapeSpectograms.append((np.ravel(spectrogram_voice), y))
+                    sameShapeSpectograms.append((spectrogram_voice, y))
             else:
-                sameShapeSpectograms.append((np.ravel(spectrogram), y))
+                sameShapeSpectograms.append((spectrogram, y))
             sys.stdout.write("#")
             sys.stdout.flush()
+        sys.stdout.write("]\n") 
 
-        sys.stdout.write("]\n")
         self.sizeOfEverySpectogram = len(sameShapeSpectograms[0][0])
         if self.isTrain:
             self.trainSpectograms = sameShapeSpectograms
@@ -175,7 +176,7 @@ class DataProvider:
 
 
     def __log_specgram__(self, audio, sample_rate):
-        mfccs = librosa.feature.mfcc(audio, sr=sample_rate)
+        mfccs = librosa.feature.mfcc(audio, sr=sample_rate, n_mfcc = N_MFCC)
         return np.matrix(mfccs).T
 
     def __add_background_voice__(self, numpy_data):
