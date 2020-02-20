@@ -27,9 +27,7 @@ class VAD:
         silence_ending_point = -1
         last_freq = numpy_data[starting_point]
         for i in range(starting_point, ending_point, iter_step):
-            if numpy_data[i] + freq_difference_allowed > last_freq and numpy_data[i] - freq_difference_allowed < last_freq:
-                last_freq = numpy_data[i]
-            else:
+            if np.abs(numpy_data[i]) > freq_difference_allowed:
                 silence_ending_point = i
                 break
         
