@@ -1,12 +1,15 @@
 # ML_Final_project
-# Final project in Machine Learning (Number recognition in voice)
+# Final project in Machine Learning (Number Recognition in Georgian Voice)
 
 Data:
 https://drive.google.com/drive/folders/1_G53evL25Rc3FQZlUmUzG-bxdYVNSovo?usp=sharing
 
 Additional:
-1) Installing librosa (do it in conda environment):
+1) Installing Librosa (do it in conda environment):
 https://librosa.github.io/librosa/install.html#conda
+
+2) Installing Keras (do it in conda environment):
+https://keras.io/#installation
 
 
 Rules:
